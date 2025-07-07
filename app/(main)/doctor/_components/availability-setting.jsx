@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useFetch from '@/hooks/use-fetch'
+import { format } from 'date-fns'
 import { AlertCircle, Clock, Loader2, Plus } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -35,27 +36,27 @@ const AvailabilitySetting = ({ slots }) => {
       endTime: ""
     }
   })
- const onSubmit = async (data) => {
+  const onSubmit = async (data) => {
 
-  if (loading) return
+    if (loading) return
 
-  const formData = new FormData()
+    const formData = new FormData()
 
-  const startDate = createLocalDateFromTime(data.startTime)
-  const endDate = createLocalDateFromTime(data.endTime)
+    const startDate = createLocalDateFromTime(data.startTime)
+    const endDate = createLocalDateFromTime(data.endTime)
 
- formData.append("startTime", startDate.toISOString())
- formData.append("endTime", endDate.toISOString())
+    formData.append("startTime", startDate.toISOString())
+    formData.append("endTime", endDate.toISOString())
 
-  await submitSlots(formData) // <--- Check if this is called
-}
-
-useEffect(() => {
-  if (data && data?.success) {
-    setShowForm(false)
-    toast.success("Availability slots set successfully")
+    await submitSlots(formData) 
   }
-}, [data])
+
+  useEffect(() => {
+    if (data && data?.success) {
+      setShowForm(false)
+      toast.success("Availability slots set successfully")
+    }
+  }, [data])
 
 
 
@@ -71,6 +72,35 @@ useEffect(() => {
       <CardContent>
         {!showForm ? (
           <>
+
+            <div className='mb-6'>
+              <h3 className='text-lg font-medium text-emerald-500 mb-3'>
+                Current Availability
+              </h3>
+
+              {slots.length === 0 ? (
+                <p className='text-muted-foreground'>
+                  You have not set any availability slots yet. Add your availability to start accepting appointments.
+                </p>
+
+              ) : (
+                <div>{slots.map((slot) => {
+                  return (
+                    <div key={slot.id} className="flex items-center p-3 rounded-md border border-emerald-600/90 ">
+                      <div className="bg-emerald-900/20 p-2 rounded-full mr-3">
+                        <Clock className="h-4 w-4 text-emerald-400" />
+                      </div>
+
+                      <p className='text-white font-medium'>
+                        {format(slot.startTime, "hh:mm a")} - {format(slot.endTime, "hh:mm a")}
+                      </p>
+
+                    </div>
+                  )
+                })}</div>
+
+              )}
+            </div>
             <Button onClick={() => setShowForm(true)} className="w-full bg-emerald-600 hover:bg-emerald-700">
               <Plus className='h-4 w-4 mr-2' />
               Set Availability

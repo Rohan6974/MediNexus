@@ -50,7 +50,7 @@ const OnboardingPage = () => {
 
   const router = useRouter();
 
-  const { data, fn: submitUserRole, loading } = useFetch(setUserRole);
+  const { data, fn: submitUserRole, loading } = useFetch(setUserRole, );
 
   const {
     register,

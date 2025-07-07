@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Calendar, User2Icon } from 'lucide-react';
 import React from 'react'
 import AvailabilitySetting from './_components/availability-setting';
+import AppointmentList from './_components/apoointment-list';
 
 const DoctorDashboard = async () => {
 
@@ -44,7 +45,9 @@ const DoctorDashboard = async () => {
       </TabsList>
 
       <div className="md:col-span-3"> 
-        <TabsContent value="appointment" className="border-none p-0">Todo</TabsContent>
+        <TabsContent value="appointment" className="border-none p-0">
+          <AppointmentList appointments={appointmentData.appointments || []} />
+        </TabsContent>
         <TabsContent value="availability" className="border-none p-0">
           <AvailabilitySetting slots={availabilityData.slots || []} />
         </TabsContent>

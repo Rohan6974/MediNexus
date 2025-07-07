@@ -9,31 +9,70 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(uuid())
-  clerkUserId       String    @unique // Clerk's user ID
-  email             String    @unique
-  name              String?
-  imageUrl          String?
-  role              UserRole  @default(UNASSIGNED) // UNASSIGNED, PATIENT, DOCTOR, ADMIN
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Patient-specific fields
-  credits           Int       @default(2) // Accumulated credit balance
-  
-  // Doctor-specific fields
-  specialty         String?
-  experience        Int?      // Years of experience
-  credentialUrl     String?   // Document URL
-  description       String?   @db.Text
-  verificationStatus VerificationStatus?  @default(PENDING)
-  
-  // Relations
-  patientAppointments Appointment[] @relation("PatientAppointments")
-  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  id                  String              @id @default(uuid())
+  clerkUserId         String              @unique
+  email               String              @unique
+  name                String?
+  imageUrl            String?
+  role                UserRole            @default(UNASSIGNED)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  credits             Int                 @default(2)
+  specialty           String?
+  experience          Int?
+  credentialUrl       String?
+  description         String?
+  verificationStatus  VerificationStatus? @default(PENDING)
+  diseases            String?
+  password            String?
+  doctorAppointments  Appointment[]       @relation("DoctorAppointments")
+  patientAppointments Appointment[]       @relation("PatientAppointments")
   availabilities      Availability[]
   transactions        CreditTransaction[]
 }
+
+model Availability {
+  id        String     @id @default(uuid())
+  doctorId  String
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus @default(AVAILABLE)
+  doctor    User       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, startTime])
+}
+
+model Appointment {
+  id                 String            @id @default(uuid())
+  patientId          String
+  doctorId           String
+  startTime          DateTime
+  endTime            DateTime
+  status             AppointmentStatus @default(SCHEDULED)
+  notes              String?
+  patientDescription String?
+  videoSessionId     String?
+  videoSessionToken  String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  diseases           String?
+  doctor             User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient            User              @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  @@index([status, startTime])
+  @@index([doctorId, startTime])
+}
+
+model CreditTransaction {
+  id        String          @id @default(uuid())
+  userId    String
+  amount    Int
+  type      TransactionType
+  packageId String?
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 
 enum UserRole {
   UNASSIGNED
@@ -48,44 +87,10 @@ enum VerificationStatus {
   REJECTED
 }
 
-model Availability {
-  id        String   @id @default(uuid())
-  doctorId  String
-  doctor    User     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  startTime DateTime
-  endTime   DateTime
-  status    SlotStatus @default(AVAILABLE)
-  
-  @@index([doctorId, startTime])
-}
-
 enum SlotStatus {
   AVAILABLE
   BOOKED
   BLOCKED
-}
-
-model Appointment {
-  id                String   @id @default(uuid())
-  patientId         String
-  patient           User     @relation("PatientAppointments", fields: [patientId], references: [id])
-  doctorId          String
-  doctor            User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  startTime         DateTime // Start time of appointment
-  endTime           DateTime // End time of appointment
-  status            AppointmentStatus @default(SCHEDULED)
-  notes             String?  @db.Text
-  patientDescription String? @db.Text
-    
-  // Video session fields
-  videoSessionId    String?  // Vonage Video API Session ID
-  videoSessionToken String?  // Optional: Can store tokens if needed
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([status, startTime])
-  @@index([doctorId, startTime])
 }
 
 enum AppointmentStatus {
@@ -94,18 +99,8 @@ enum AppointmentStatus {
   CANCELLED
 }
 
-model CreditTransaction {
-  id                String   @id @default(uuid())
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount            Int      // Positive for additions, negative for usage
-  type              TransactionType
-  packageId         String?  // Reference to which package was purchased
-  createdAt         DateTime @default(now())
-}
-
 enum TransactionType {
-  CREDIT_PURCHASE     // Credits purchased through Clerk Billing
-  APPOINTMENT_DEDUCTION // Credit used for appointment
-  ADMIN_ADJUSTMENT      // Manual adjustment by admin
+  CREDIT_PURCHASE
+  APPOINTMENT_DEDUCTION
+  ADMIN_ADJUSTMENT
 }
