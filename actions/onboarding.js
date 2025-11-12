@@ -5,8 +5,6 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 export async function setUserRole(formData) {
-  const ADMIN_EMAIL = "admin@example.com";
-  const ADMIN_PASSWORD = "210420";
   const { userId } = await auth();
 
   if (!userId) {
@@ -65,8 +63,8 @@ export async function setUserRole(formData) {
     if (role === "ADMIN") {
       const email = formData.get("email");
       const password = formData.get("password");
-      const ADMIN_EMAIL = "admin@example.com";
-      const ADMIN_PASSWORD = "1111";
+      const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
       if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
         throw new Error("Invalid admin credentials");

@@ -83,7 +83,7 @@ export async function getDoctorAvailability() {
   }
 
   try {
-    const doctor = db.user.findUnique({
+    const doctor = await db.user.findUnique({
       where: {
         clerkUserId: userId,
         role: "DOCTOR",
@@ -117,7 +117,7 @@ export async function getDoctorAppointments() {
   }
 
   try {
-    const doctor = db.user.findUnique({
+    const doctor = await db.user.findUnique({
       where: {
         clerkUserId: userId,
         role: "DOCTOR",
@@ -372,5 +372,30 @@ export async function markAppointmentCompleted(formData) {
     return { success: true, appointment: updatedAppointment };
   } catch (error) {
     throw new Error(error.message);
+  }
+}
+
+export async function getDoctors(){
+  const {userId} = await auth()
+
+  if(!userId){
+    throw new Error("Unauthorized")
+  }
+
+  try {
+    const doctor = await db.user.findUnique({
+      where:{
+        clerkUserId:userId,
+        role:"DOCTOR"
+      }
+    })
+
+    if(!doctor){
+      throw new Error("Doctor not found")
+    }
+
+    return {doctor}
+  } catch (error) {
+    throw new Error(error.message)
   }
 }

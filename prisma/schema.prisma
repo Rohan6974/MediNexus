@@ -29,6 +29,7 @@ model User {
   patientAppointments Appointment[]       @relation("PatientAppointments")
   availabilities      Availability[]
   transactions        CreditTransaction[]
+  payouts             Payout[] 
 }
 
 model Availability {
@@ -68,9 +69,49 @@ model CreditTransaction {
   userId    String
   amount    Int
   type      TransactionType
+  medicineId String?
   packageId String?
   createdAt DateTime        @default(now())
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicine  Medicine?       @relation(fields: [medicineId], references:[id])
+}
+
+model Medicine {
+  id        String          @id @default(uuid())
+  name      String          @unique
+  price     Int             
+  imageUrl  String?
+  dosage    String?      
+  description String?
+  specialty String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  transactions CreditTransaction[]
+}
+
+
+model Payout {
+  id              String        @id @default(uuid())
+  doctorId        String
+  doctor          User          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  amount          Float         // Total payout amount in USD
+  credits         Int           // Number of credits being paid out
+  platformFee     Float         // Platform fee deducted (2 USD per credit)
+  netAmount       Float         // Amount doctor receives (8 USD per credit)
+  paypalEmail     String        // Doctor's PayPal email for payout
+  status          PayoutStatus  @default(PROCESSING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  processedAt     DateTime?     // When admin marked it as processed
+  processedBy     String?       // Admin who processed it
+
+  @@index([status, createdAt])
+  @@index([doctorId, status])
+}
+
+enum PayoutStatus {
+  PROCESSING
+  PROCESSED
 }
 
 
@@ -103,4 +144,5 @@ enum TransactionType {
   CREDIT_PURCHASE
   APPOINTMENT_DEDUCTION
   ADMIN_ADJUSTMENT
+  MEDICINE_PURCHASE
 }

@@ -21,7 +21,6 @@ const DoctorCard = ({ doctor }) => {
                     </div>
 
                     <div className='flex-1'>
-
                         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2'>
                             <h3 className='font-medium text-white text-lg'>{doctor.name}</h3>
                             <Badge variant={"outline"} className="bg-emerald-800/60 border-emerald-600/30 text-emerald-400 self-start" >
@@ -29,22 +28,16 @@ const DoctorCard = ({ doctor }) => {
                                 Verified
                             </Badge>
                         </div>
-
                         <p className='text-sm text-muted-foreground mb-1'>
                             {doctor.specialty} - {doctor.experience} years of experience
                         </p>
-
                         <div className='mt-4 line-clamp-2 text-sm text-muted-foreground mb-4'>
                             {doctor.description}
                         </div>
-
                         <Button asChild className="w-full bg-emerald-500 hover:bg-emerald-600 transition-all mt-2">
                             <Link href={`/doctors/${doctor.specialty}/${doctor.id}`}><Calendar className='h-4 w-4 mr-2' />View Profile and Book</Link>
                         </Button>
                     </div>
-
-
-
                 </div>
             </CardContent>
         </Card>

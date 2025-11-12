@@ -132,3 +132,119 @@ export async function updateDoctorActiveStatus(fromData) {
     throw new Error("Failed to update Doctor Status", error || error.message);
   }
 }
+
+export async function getPendingPayouts() {
+  const isAdmin = await verifyAdmin();
+  if (!isAdmin) throw new Error("Unauthorized");
+
+  try {
+    const pendingPayouts = await db.payout.findMany({
+      where: {
+        status: "PROCESSING",
+      },
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            specialty: true,
+            credits: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return { payouts: pendingPayouts };
+  } catch (error) {
+    console.error("Failed to fetch pending payouts:", error);
+    throw new Error("Failed to fetch pending payouts");
+  }
+}
+
+/**
+ * Approves a payout request and deducts credits from doctor's account
+ */
+export async function approvePayout(formData) {
+  const isAdmin = await verifyAdmin();
+  if (!isAdmin) throw new Error("Unauthorized");
+
+  const payoutId = formData.get("payoutId");
+
+  if (!payoutId) {
+    throw new Error("Payout ID is required");
+  }
+
+  try {
+    // Get admin user info
+    const { userId } = await auth();
+    const admin = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    // Find the payout request
+    const payout = await db.payout.findUnique({
+      where: {
+        id: payoutId,
+        status: "PROCESSING",
+      },
+      include: {
+        doctor: true,
+      },
+    });
+
+    if (!payout) {
+      throw new Error("Payout request not found or already processed");
+    }
+
+    // Check if doctor has enough credits
+    if (payout.doctor.credits < payout.credits) {
+      throw new Error("Doctor doesn't have enough credits for this payout");
+    }
+
+    // Process the payout in a transaction
+    await db.$transaction(async (tx) => {
+      // Update payout status to PROCESSED
+      await tx.payout.update({
+        where: {
+          id: payoutId,
+        },
+        data: {
+          status: "PROCESSED",
+          processedAt: new Date(),
+          processedBy: admin?.id || "unknown",
+        },
+      });
+
+      // Deduct credits from doctor's account
+      await tx.user.update({
+        where: {
+          id: payout.doctorId,
+        },
+        data: {
+          credits: {
+            decrement: payout.credits,
+          },
+        },
+      });
+
+      // Create a transaction record for the deduction
+      await tx.creditTransaction.create({
+        data: {
+          userId: payout.doctorId,
+          amount: -payout.credits,
+          type: "ADMIN_ADJUSTMENT",
+        },
+      });
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to approve payout:", error);
+    throw new Error(`Failed to approve payout: ${error.message}`);
+  }
+}
