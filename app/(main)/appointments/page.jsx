@@ -4,6 +4,7 @@ import AppointmentCard from '@/components/appointment-card'
 import PageHeader from '@/components/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
+import { redirect } from 'next/navigation'
 import React from 'react'
 
 const PatientAppointmentPage = async () => {

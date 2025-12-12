@@ -162,7 +162,7 @@ const VideoCall = ({ sessionId, token }) => {
     }
 
     return (
-        <>
+       <>
             <Script
                 src='https://unpkg.com/@vonage/client-sdk-video@latest/dist/js/opentok.js'
                 onLoad={handleScriptLoad}

@@ -50,7 +50,7 @@ const OnboardingPage = () => {
 
   const router = useRouter();
 
-  const { data, fn: submitUserRole, loading } = useFetch(setUserRole, );
+  const { data, fn: submitUserRole, loading } = useFetch(setUserRole,);
 
   const {
     register,
@@ -83,10 +83,15 @@ const OnboardingPage = () => {
   const specialtyValue = watch("specialty");
 
   const handlePatientSelection = async () => {
+    setStep("patient-severity");
+  };
+
+  const handlePatientSeveritySelection = async (severity) => {
     if (loading) return;
 
     const formData = new FormData();
     formData.append("role", "PATIENT");
+    formData.append("severity", severity);
 
     await submitUserRole(formData);
   };
@@ -205,6 +210,84 @@ const OnboardingPage = () => {
         </Card>
 
 
+      </div>
+    );
+  }
+
+  if (step === "patient-severity") {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <Card
+          onClick={() => !loading && handlePatientSeveritySelection("MILD")}
+          className="border-emerald-700/20 hover:border-emerald-700/90 cursor-pointer transition-all"
+        >
+          <CardContent className="pt-6 pb-6 flex flex-col items-center text-center">
+            <div className="p-4 bg-emerald-800/90 rounded-full mb-6">
+              <User className="h-8 w-8 text-emerald-400" />
+            </div>
+            <CardTitle className="text-xl font-bold text-fuchsia-100 mb-2 ">
+              Mild Condition
+            </CardTitle>
+            <CardDescription className="mb-5 text-muted-foreground">
+              Standard access to video consultations and online appointments.
+            </CardDescription>
+            <Button
+              disabled={loading}
+              className="w-full mt-4 bg-emerald-600 hover:bg-emerald-800/80"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Select Mild"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card
+          onClick={() => !loading && handlePatientSeveritySelection("SEVERE")}
+          className="border-emerald-700/20 hover:border-emerald-700/90 cursor-pointer transition-all"
+        >
+          <CardContent className="pt-6 pb-6 flex flex-col items-center text-center">
+            <div className="p-4 bg-red-800/90 rounded-full mb-6">
+              <ShieldAlertIcon className="h-8 w-8 text-red-400" />
+            </div>
+            <CardTitle className="text-xl font-bold text-fuchsia-100 mb-2 ">
+              Severe Condition
+            </CardTitle>
+            <CardDescription className="mb-5 text-muted-foreground">
+              Requires physical visits. Video consultations will not be available.
+            </CardDescription>
+            <Button
+              disabled={loading}
+              className="w-full mt-4 bg-red-600 hover:bg-red-800/80"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Select Severe"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="col-span-full flex justify-center mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={() => setStep("choose-role")}
+            className="bg-muted-foreground"
+          >
+            Back
+          </Button>
+        </div>
       </div>
     );
   }

@@ -25,9 +25,13 @@ export async function setUserRole(formData) {
 
   try {
     if (role === "PATIENT") {
+      const severity = formData.get("severity");
       await db.user.update({
         where: { clerkUserId: userId },
-        data: { role: "PATIENT" },
+        data: { 
+          role: "PATIENT",
+          severity: severity
+        },
       });
 
       revalidatePath("/");

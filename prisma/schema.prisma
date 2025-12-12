@@ -24,6 +24,7 @@ model User {
   description         String?
   verificationStatus  VerificationStatus? @default(PENDING)
   diseases            String?
+  severity            Severity?
   password            String?
   doctorAppointments  Appointment[]       @relation("DoctorAppointments")
   patientAppointments Appointment[]       @relation("PatientAppointments")
@@ -145,4 +146,9 @@ enum TransactionType {
   APPOINTMENT_DEDUCTION
   ADMIN_ADJUSTMENT
   MEDICINE_PURCHASE
+}
+
+enum Severity {
+  MILD
+  SEVERE
 }

@@ -22,7 +22,7 @@ import { checkAndAllocateCredits } from "@/actions/credits";
 
 const Header = async () => {
   const user = await CheckUser();
-   if (user?.role === "PATIENT") {
+  if (user?.role === "PATIENT") {
     await checkAndAllocateCredits(user);
   }
 
@@ -80,18 +80,32 @@ const Header = async () => {
               </Link>
             )}
             {user?.role === "PATIENT" && (
-              <Link href="/appointments">
-                <Button
-                  variant="outline"
-                  className="hidden md:inline-flex cursor-pointer items-center gap-4"
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  My Appointment
-                </Button>
-                <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
-                  <Calendar className="h-4 w-4" />
-                </Button>
-              </Link>
+              <>
+                <Link href="/appointments">
+                  <Button
+                    variant="outline"
+                    className="hidden md:inline-flex cursor-pointer items-center gap-4"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    My Appointment
+                  </Button>
+                  <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/patient/settings">
+                  <Button
+                    variant="outline"
+                    className="hidden md:inline-flex cursor-pointer items-center gap-4"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Settings
+                  </Button>
+                  <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </>
             )}
             {user?.role === "UNASSIGNED" && (
               <Link href="/onboarding">
@@ -117,11 +131,11 @@ const Header = async () => {
                 <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="text-emerald-400">
                   {user && user?.role === "PATIENT" ? (
-                  <>
-                  {user.credits }
-                  <span className="hidden md:inline" >Credits</span> 
-                  </>
-                ) : <>Pricing</>}
+                    <>
+                      {user.credits}
+                      <span className="hidden md:inline" >Credits</span>
+                    </>
+                  ) : <>Pricing</>}
                 </span>
               </Badge>
             </Link>

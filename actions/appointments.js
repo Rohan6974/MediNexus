@@ -240,7 +240,10 @@ export async function bookAppointment(formData) {
       throw new Error("Overlapping appointment");
     }
 
-    const sessionId = await createVideoSession();
+    let sessionId = null;
+    if (patient.severity !== "SEVERE") {
+      sessionId = await createVideoSession();
+    }
 
     const { success, error } = await deductCreditsForAppointments(
       patient.id,
